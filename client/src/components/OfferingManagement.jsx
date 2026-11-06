@@ -80,12 +80,12 @@ export default function OfferingManagement({ onChanged, refreshVersion = 0 }) {
       setMessage("Unused offering removed.");
     } catch (err) { setError(err.message); } finally { setBusy(false); }
   }
-  return <section className="dashboard-panel" style={{ marginBottom: 24 }}>
+  return <section className="dashboard-section">
     <h2>Course offerings — current term</h2>
-    <p>Open a section, edit its details, or remove an unused section. Changes are protected when registrations exist.</p>
-    {error && <p role="alert" style={{ color: "#b91c1c" }}>{error}</p>}
-    {message && <p role="status">{message}</p>}
-    <form onSubmit={save} style={{ display: "grid", gap: 12, marginBottom: 20 }}>
+    <p className="muted-text">Open a section, edit its details, or remove an unused section. Changes are protected when registrations exist.</p>
+    {error && <p role="alert" className="message-error">{error}</p>}
+    {message && <p role="status" className="message-success">{message}</p>}
+    <form onSubmit={save} className="form-card">
       <h3>{editing ? "Edit offering" : "Create offering"}</h3>
       <div className="management-grid">
         <label>Course <select style={inputStyle} required value={form.courseId}
@@ -127,19 +127,19 @@ export default function OfferingManagement({ onChanged, refreshVersion = 0 }) {
             onChange={e => setMeeting(i, "endTime", e.target.value)}/></label>
         </div>)}
       </fieldset>
-      <div><button type="submit" disabled={busy}>{busy ? "Saving..." : editing ? "Save offering" : "Create offering"}</button>
+      <div className="form-actions"><button type="submit" className="primary-button" disabled={busy}>{busy ? "Saving…" : editing ? "Save offering" : "Create offering"}</button>
         {editing && <button type="button" disabled={busy} onClick={reset}>Cancel edit</button>}</div>
     </form>
-    <div className="student-table-wrapper"><table className="student-table"><thead><tr>
+    <div className="student-table-wrapper"><table className="student-table responsive-table"><thead><tr>
       <th>Course</th><th>Term</th><th>Section</th><th>Schedule</th><th>Room</th>
       <th>Instructor</th><th>Seats taken</th><th>Seats remaining</th><th>Actions</th>
     </tr></thead><tbody>
-      {offerings.map(row => <tr key={row.id}><td>{row.courseCode} — {row.courseTitle}</td>
-        <td>{row.term}</td><td>{row.section}</td><td>{scheduleText(row.meetings)}</td>
-        <td>{row.room}</td><td>{row.instructor}</td><td>{row.seatsTaken}</td>
-        <td>{row.seatsRemaining}</td><td><button type="button" disabled={busy}
-          onClick={() => edit(row)}>Edit</button>{" "}
-          <button type="button" disabled={busy} onClick={() => remove(row)}>Remove</button></td>
+      {offerings.map(row => <tr key={row.id}><td data-label="Course"><span><strong>{row.courseCode}</strong><br />{row.courseTitle}</span></td>
+        <td data-label="Term">{row.term}</td><td data-label="Section">{row.section}</td><td data-label="Schedule">{scheduleText(row.meetings)}</td>
+        <td data-label="Room">{row.room}</td><td data-label="Instructor">{row.instructor}</td><td data-label="Seats taken">{row.seatsTaken}</td>
+        <td data-label="Seats left">{row.seatsRemaining}</td><td data-label="Actions"><div className="actions-cell"><button type="button" disabled={busy}
+          onClick={() => edit(row)}>Edit</button>
+          <button type="button" className="danger-button" disabled={busy} onClick={() => remove(row)}>Remove</button></div></td>
       </tr>)}
       {offerings.length === 0 && <tr><td colSpan="9">No current-term offerings found.</td></tr>}
     </tbody></table></div>

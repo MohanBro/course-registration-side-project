@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { login } from "../api";
+import usePageTitle from "../hooks/usePageTitle.js";
 import AuthLayout from "../components/AuthLayout";
 
 // Short messages shown above the form after a redirect to this page.
@@ -10,6 +11,7 @@ const NOTICES = {
 };
 
 export default function Login() {
+  usePageTitle("Sign in");
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const notice = searchParams.get("session") === "ended" ? NOTICES["session=ended"]

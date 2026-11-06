@@ -1,6 +1,6 @@
 import AdvisorDashboard from "./pages/AdvisorDashboard";
 import { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import { apiRequest } from "./api";
 import Login from "./pages/Login";
@@ -75,7 +75,7 @@ function App() {
           />
 
           <Route
-            path="/admin"
+            path="/admin/*"
             element={
               <ProtectedRoute allowedRole="admin">
                 <AdminDashboard />
@@ -84,13 +84,15 @@ function App() {
           />
 
           <Route
-            path="/advisor"
+            path="/advisor/*"
             element={
               <ProtectedRoute allowedRole="advisor">
                 <AdvisorDashboard />
               </ProtectedRoute>
             }
           />
+          {/* Any unknown address goes back to the start page. */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </>

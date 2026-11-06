@@ -5,6 +5,7 @@ const clean = { name: "", email: "", password: "", role: "student", studentId: "
 export default function AccountManagement({ onChanged }) {
   const [users, setUsers] = useState([]);
   const [roleFilter, setRoleFilter] = useState("all");
+  const [search, setSearch] = useState("");
   const [form, setForm] = useState(clean);
   const [editing, setEditing] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -62,14 +63,16 @@ export default function AccountManagement({ onChanged }) {
       setMessage("Account deactivated; records preserved.");
     } catch (err) { setError(err.message); } finally { setBusy(false); }
   }
-  const filtered = roleFilter === "all" ? users : users.filter(u => u.role === roleFilter);
+  const query = search.trim().toLowerCase();
+  const filtered = (roleFilter === "all" ? users : users.filter(u => u.role === roleFilter))
+    .filter(u => !query || [u.name, u.email, u.studentId].some(v => String(v || "").toLowerCase().includes(query)));
   const advisors = users.filter(u => u.role === "advisor" && u.active);
-  return <section className="dashboard-panel">
+  return <section className="dashboard-section">
     <h2>Manage all user accounts</h2>
-    <p>Create students, advisors or administrators. Edit account details and safely deactivate unused accounts.</p>
-    {error && <p role="alert" style={{ color: "#b91c1c" }}>{error}</p>}
-    {message && <p role="status">{message}</p>}
-    <form onSubmit={save} style={{ display: "grid", gap: 12 }}>
+    <p className="muted-text">Create students, advisors or administrators. Edit account details and safely deactivate unused accounts.</p>
+    {error && <p role="alert" className="message-error">{error}</p>}
+    {message && <p role="status" className="message-success">{message}</p>}
+    <form onSubmit={save} className="form-card">
       <h3>{editing ? "Edit account" : "Create account"}</h3>
       <div className="management-grid">
         <label>Name <input required maxLength="100" value={form.name}
@@ -97,24 +100,33 @@ export default function AccountManagement({ onChanged }) {
           <option value="true">Active</option><option value="false">Inactive</option>
         </select></label>}
       </div>
-      <div><button type="submit" disabled={busy}>{busy ? "Saving..." : editing ? "Save changes" : "Create account"}</button>{" "}
+      <div className="form-actions"><button type="submit" className="primary-button" disabled={busy}>{busy ? "Saving…" : editing ? "Save changes" : "Create account"}</button>
         {editing && <button type="button" disabled={busy} onClick={reset}>Cancel edit</button>}</div>
     </form>
-    <div style={{ marginTop: 18 }}><label>Filter role <select value={roleFilter}
-      onChange={e => setRoleFilter(e.target.value)}>
-      <option value="all">All</option><option value="student">Students</option>
-      <option value="advisor">Advisors</option><option value="admin">Admins</option>
-    </select></label></div>
-    <div className="student-table-wrapper"><table className="student-table"><thead><tr>
+    <div className="toolbar">
+      <div className="search-box">
+        <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+        <label className="visually-hidden" htmlFor="account-search">Search accounts</label>
+        <input id="account-search" type="search" placeholder="Search by name, email or student ID" value={search} onChange={e => setSearch(e.target.value)} />
+      </div>
+      <div className="segmented" aria-label="Filter by role">
+        {[["all", "All"], ["student", "Students"], ["advisor", "Advisors"], ["admin", "Admins"]].map(([value, label]) =>
+          <button key={value} type="button" aria-pressed={roleFilter === value} onClick={() => setRoleFilter(value)}>{label}</button>)}
+      </div>
+    </div>
+    <div className="student-table-wrapper"><table className="student-table responsive-table"><thead><tr>
       <th>Name</th><th>Email</th><th>Role</th><th>Student ID</th><th>Advisor</th><th>Status</th><th>Actions</th>
     </tr></thead><tbody>{filtered.map(u => <tr key={u.id}>
-      <td>{u.name}</td><td>{u.email}</td><td>{u.role}</td><td>{u.studentId || "—"}</td>
-      <td>{u.advisor?.name || "—"}</td><td>{u.active ? "Active" : "Inactive"}</td><td>
-        <button type="button" disabled={busy} onClick={() => edit(u)}>Edit</button>{" "}
-        {u.active && <button type="button" disabled={busy}
-          onClick={() => deactivate(u)}>Deactivate</button>}
+      <td data-label="Name"><strong>{u.name}</strong></td><td data-label="Email">{u.email}</td><td data-label="Role" style={{ textTransform: "capitalize" }}>{u.role}</td><td data-label="Student ID">{u.studentId || "—"}</td>
+      <td data-label="Advisor">{u.advisor?.name || "—"}</td>
+      <td data-label="Status"><span className={`status-pill ${u.active ? "status-active" : "status-inactive"}`}>{u.active ? "Active" : "Inactive"}</span></td><td data-label="Actions">
+        <div className="actions-cell">
+          <button type="button" disabled={busy} onClick={() => edit(u)}>Edit</button>
+          {u.active && <button type="button" className="danger-button" disabled={busy}
+            onClick={() => deactivate(u)}>Deactivate</button>}
+        </div>
       </td></tr>)}
-      {filtered.length === 0 && <tr><td colSpan="7">No accounts in this role.</td></tr>}
+      {filtered.length === 0 && <tr><td colSpan="7">{query ? `No accounts match “${search}”.` : "No accounts in this role."}</td></tr>}
     </tbody></table></div>
   </section>;
 }

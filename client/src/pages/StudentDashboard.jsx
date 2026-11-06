@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate, NavLink, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { apiRequest } from "../api.js";
 import AddDropRequests from "../components/AddDropRequests.jsx";
 import WeeklyTimetable from "../components/WeeklyTimetable.jsx";
@@ -7,10 +7,10 @@ import StudentOverview from "../components/student/StudentOverview.jsx";
 import StudentCourses from "../components/student/StudentCourses.jsx";
 import StudentGrades from "../components/student/StudentGrades.jsx";
 import DeadlineBanner from "../components/student/DeadlineBanner.jsx";
-import Icon from "../components/Icon.jsx";
+import AppShell, { PageHeader } from "../components/AppShell.jsx";
+import usePageTitle from "../hooks/usePageTitle.js";
 import { buildTimetable } from "../utils/timetable.js";
 import { bangkokNow, greeting, planForNow, upcomingDeadlines, urgentDeadline } from "../utils/studentDashboard.js";
-import "./StudentDashboard.css";
 
 // The sections of the student workspace. Each has its own address, e.g. /student/grades.
 const SECTIONS = [
@@ -68,6 +68,7 @@ export default function StudentDashboard() {
     navigate("/", { replace: true });
   }
 
+  usePageTitle(section ? (section.title || "Overview") : null);
   if (!section) return <Navigate to="/student" replace />;
 
   const clock = bangkokNow(new Date(now));
@@ -102,31 +103,15 @@ export default function StudentDashboard() {
     </>;
   }
 
-  return <div className="student-layout">
-    <a className="skip-link" href="#main-content">Skip to main content</a>
-    <aside className="student-nav-area">
-      <div className="student-brand"><span className="portal-symbol" aria-hidden="true">C</span><span>Course Portal</span></div>
-      <nav aria-label="Student sections" className="student-nav">
-        {SECTIONS.map(s => <NavLink key={s.key} to={s.path} end className={({ isActive }) => `student-nav-link${isActive ? " active" : ""}`}>
-          <span className="nav-label"><Icon name={s.icon} />{s.label}</span>{s.key === "requests" && pendingCount > 0 && <span className="nav-count" aria-label={`${pendingCount} pending`}>{pendingCount}</span>}
-        </NavLink>)}
-      </nav>
-      {data && <div className="student-identity">
-        <span className="avatar" aria-hidden="true">{data.student.name.trim().charAt(0).toUpperCase()}</span>
-        <span><strong>{data.student.name}</strong><small>{data.student.studentId}</small></span>
-      </div>}
-      <button type="button" className="student-logout" onClick={logout}><Icon name="logout" /> Log out</button>
-    </aside>
-
-    <main className="student-main" id="main-content" tabIndex={-1}>
-      {urgent && section.key !== "requests" && <DeadlineBanner deadline={urgent} />}
-      <header className="student-page-header">
-        {section.key === "overview"
-          ? <><p className="eyebrow">Student workspace</p><h1>{greeting(clock.minutes)}{data ? `, ${data.student.name.split(" ")[0]}` : ""}.</h1>
-            <p className="muted-text">Here's what's happening with your studies.</p></>
-          : <><p className="eyebrow">Student workspace</p><h1>{section.title}</h1></>}
-      </header>
-      {content}
-    </main>
-  </div>;
+  const items = SECTIONS.map(x => ({ key: x.key, to: x.path, label: x.label, icon: x.icon,
+    badge: x.key === "requests" ? pendingCount : 0 }));
+  return <AppShell items={items} workspace="Student" onLogout={logout}
+    person={data ? { name: data.student.name, detail: data.student.studentId } : null}>
+    {urgent && section.key !== "requests" && <DeadlineBanner deadline={urgent} />}
+    {section.key === "overview"
+      ? <PageHeader eyebrow="Student workspace" title={`${greeting(clock.minutes)}${data ? `, ${data.student.name.split(" ")[0]}` : ""}.`}
+          description="Here's what's happening with your studies." />
+      : <PageHeader eyebrow="Student workspace" title={section.title} />}
+    {content}
+  </AppShell>;
 }

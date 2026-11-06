@@ -3,13 +3,27 @@
   color: #182c40; background: #f3f6f8; font-synthesis: none; text-rendering: optimizeLegibility;
   --navy: #142d43; --teal: #087c71; --teal-hover: #066258; --muted: #596e7f;
   --border: #dce5ea; --surface-soft: #f6f9fa; --danger: #a82e38;
+  --page: #f3f6f8; --surface: #ffffff;
+
+  /* Status colours, in background + text pairs (like Material Design's "container"
+     colours). Every pair was checked for at least 4.5:1 contrast (WCAG AA). */
+  --success-bg: #def3ec; --success-text: #086348; --success-line: #8fd0bb;
+  --warning-bg: #fff4d6; --warning-text: #7a4f00; --warning-line: #f0cc72;
+  --danger-bg: #fbe6e6;  --danger-text: #9b2730;  --danger-line: #eba9ae;
+  --info-bg: #e7effb;    --info-text: #1f4f8f;    --info-line: #a9c2e8;
+  --neutral-bg: #edf1f5; --neutral-text: #44576a;
+
+  /* Spacing (multiples of 4px), corner radius and shadow, so pages feel consistent. */
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px; --space-6: 32px;
+  --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px;
+  --shadow-card: 0 1px 2px #142d430a, 0 4px 12px #142d430a;
 }
 * { box-sizing: border-box; }
 html, body, #root { margin: 0; min-height: 100%; }
 body { min-height: 100vh; line-height: 1.5; }
 button, input, select, textarea { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
-button { cursor: pointer; min-height: 42px; padding: 9px 16px; border: 1px solid var(--border); border-radius: 8px; background: white; color: var(--navy); font-size: .85rem; font-weight: 600; transition: background .15s, border-color .15s; }
+button { cursor: pointer; min-height: 44px; padding: 9px 16px; border: 1px solid var(--border); border-radius: 8px; background: white; color: var(--navy); font-size: .85rem; font-weight: 600; transition: background .15s, border-color .15s; }
 button:hover:not(:disabled) { background: #edf5f3; border-color: #9cc6bf; }
 button:disabled { opacity: .5; cursor: not-allowed; }
 input:not([type="checkbox"]), select, textarea { min-height: 44px; border: 1px solid #cbd8e0; border-radius: 8px; padding: 10px 12px; color: var(--navy); background: white; }
@@ -21,5 +35,9 @@ h1 { letter-spacing: -.035em; }
 h2 { letter-spacing: -.02em; }
 [role="alert"] { color: var(--danger); }
 .eyebrow { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .15em; color: var(--teal); margin: 0 0 12px; }
+/* "Skip to main content" link: hidden until a keyboard user presses Tab. */
+.skip-link { position: absolute; left: 16px; top: -60px; z-index: 100; padding: 10px 16px; border-radius: 8px; background: var(--navy); color: white; font-weight: 600; text-decoration: none; }
+.skip-link:focus { top: 12px; }
+.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; }
 .service-notice { margin: 0; padding: 12px 24px; background: #fff3e5; font-size: .85rem; text-align: center; }
 @media(prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; } }

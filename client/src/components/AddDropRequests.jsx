@@ -1,13 +1,18 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {apiRequest} from '../api.js';
+import {findOffering} from '../utils/studentDashboard.js';
 import './AddDropRequests.css';
 const date=value=>new Intl.DateTimeFormat('en-GB',{dateStyle:'medium',timeStyle:'short',timeZone:'Asia/Bangkok'}).format(new Date(value));
-export default function AddDropRequests({advisor=false,onChanged}) {
+// initialChoice (students only, optional): {courseCode, section} to pre-select, e.g. after
+// clicking "Request a change" on a course card.
+export default function AddDropRequests({advisor=false,onChanged,initialChoice=null}) {
   const base=advisor?'/advisor':'/student';
   const [data,setData]=useState(null),[error,setError]=useState(''),[message,setMessage]=useState('');
   const [busy,setBusy]=useState(false),[offeringId,setOfferingId]=useState(''),[reason,setReason]=useState(''),[responses,setResponses]=useState({});
   const [now,setNow]=useState(Date.now);
   const alive=useRef(false),versions=useRef(null),callback=useRef(onChanged);
+  // The course to pre-select (used once, the first time the options load).
+  const choice=useRef(advisor?null:initialChoice);
   useEffect(()=>{callback.current=onChanged;},[onChanged]);
   const load=useCallback(async(signal)=>{
     try {
@@ -16,6 +21,7 @@ export default function AddDropRequests({advisor=false,onChanged}) {
       const next=Object.fromEntries(requests.requests.map(r=>[r.id,r.status]));
       const changed=versions.current&&requests.requests.some(r=>r.status==='approved'&&versions.current[r.id]!==r.status);
       versions.current=next;setData({...requests,...options});setError('');
+      if(choice.current){const match=findOffering(options.offerings??[],choice.current.courseCode,choice.current.section);choice.current=null;if(match)setOfferingId(match.id);}
       if(changed)callback.current?.();
     }catch(e){if(!signal?.aborted&&alive.current)setError(e.message);}
   },[base,advisor]);
@@ -28,9 +34,9 @@ export default function AddDropRequests({advisor=false,onChanged}) {
     const clock=setInterval(()=>setNow(Date.now()),1000);
     return()=>{alive.current=false;controller.abort();clearInterval(poll);clearInterval(clock);};
   },[load]);
-  async function mutate(path,body) {
+  async function mutate(path,body,success='Request updated successfully.') {
     if(busy)return false;setBusy(true);setError('');setMessage('');
-    try {await apiRequest(path,{method:'POST',body:JSON.stringify(body)});await load();if(alive.current)setMessage('Request updated successfully.');return true;}
+    try {await apiRequest(path,{method:'POST',body:JSON.stringify(body)});await load();if(alive.current)setMessage(success);return true;}
     catch(e){if(alive.current)setError(e.message);return false;}
     finally{if(alive.current)setBusy(false);}
   }
@@ -40,18 +46,18 @@ export default function AddDropRequests({advisor=false,onChanged}) {
   const allowed=o=>open(o)&&!o.pending&&(o.registered||o.eligible);
   async function submit(e) {
     e.preventDefault();if(!selected||!allowed(selected))return;
-    if(await mutate('/student/requests',{offeringId,action:selected.registered?'drop':'add',reason})) {setReason('');setOfferingId('');}
+    if(await mutate('/student/requests',{offeringId,action:selected.registered?'drop':'add',reason},'Request sent to your advisor. You will see the decision here.')) {setReason('');setOfferingId('');}
   }
   async function review(row,decision) {
     if(!window.confirm(`${decision==='approved'?'Approve':'Reject'} ${row.action} request for ${row.student?.name}, ${row.offering?.courseCode}?`))return;
-    await mutate(`/advisor/requests/${row.id}/review`,{decision,response:responses[row.id]??''});
+    await mutate(`/advisor/requests/${row.id}/review`,{decision,response:responses[row.id]??''},decision==='approved'?'Request approved.':'Request rejected.');
   }
   const rows=data?.requests??[];
   return <section className={advisor?'dashboard-panel request-panel':'dashboard-section request-panel'} aria-label="Add and drop requests">
-    <div className="request-heading"><div><p className="eyebrow">{advisor?'Advisor inbox':'Student services'}</p><h2>Add / Drop Requests {advisor&&data?`(${data.pendingCount} pending)`:''}</h2></div><button type="button" disabled={busy} onClick={()=>void load()}>Refresh requests</button></div>
+    <div className="request-heading"><div><p className="eyebrow">{advisor?'Advisor inbox':'Student services'}</p><h2>Add/drop requests {advisor&&data?`(${data.pendingCount} pending)`:''}</h2></div><button type="button" disabled={busy} onClick={()=>void load()}>Refresh requests</button></div>
     <p>{advisor?'Review requests from your currently assigned students. Approval checks the deadline, grades, available seats and timetable again.':'Submit a request to your assigned advisor. Your registration changes only after approval; a pending request does not reserve a seat.'}</p>
     <p className="request-muted">Updates are checked every 15 seconds. Dates use Bangkok time.</p>
-    {error&&<p role="alert">{error}</p>}{message&&<p role="status">{message}</p>}
+    {error&&<p role="alert">{error}</p>}{message&&<p role="status" className="request-success">{message}</p>}
     {!data?<p role="status">Loading requests…</p>:<>
       {!advisor&&<form className="request-form" onSubmit={submit}>
         <label htmlFor="request-course">Course and section</label>
@@ -79,7 +85,7 @@ export default function AddDropRequests({advisor=false,onChanged}) {
           <textarea id={`response-${row.id}`} maxLength={1000} rows={2} value={responses[row.id]??''} onChange={e=>setResponses({...responses,[row.id]:e.target.value})} disabled={busy}/>
           <div className="request-actions"><button disabled={busy||!row.offering||!open(row.offering)} type="button" onClick={()=>review(row,'approved')}>Approve {row.action}</button><button disabled={busy||(responses[row.id]??'').trim().length<5} type="button" onClick={()=>review(row,'rejected')}>Reject request</button></div>
           {(!row.offering||!open(row.offering))&&<p>Window closed. Reopen it in Offering Management before approval, or reject with an explanation.</p>}
-        </div>:<button disabled={busy} type="button" onClick={()=>{if(window.confirm('Cancel this pending request?'))void mutate(`/student/requests/${row.id}/cancel`,{});}}>Cancel request</button>)}
+        </div>:<button disabled={busy} type="button" onClick={()=>{if(window.confirm('Cancel this pending request?'))void mutate(`/student/requests/${row.id}/cancel`,{},'Request cancelled.');}}>Cancel request</button>)}
       </article>)}</div>
       <p className="request-muted">Showing up to 200 most recent requests.</p>
     </>}

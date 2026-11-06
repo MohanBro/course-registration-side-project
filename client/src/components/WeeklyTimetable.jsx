@@ -1,34 +1,68 @@
 import { useState } from "react";
 import { buildTimetable, timeLabel } from "../utils/timetable.js";
+import { courseTones } from "../utils/studentDashboard.js";
+import { downloadIcs, WEEKS } from "../utils/calendar.js";
+import Icon from "./Icon.jsx";
 import "./WeeklyTimetable.css";
 
-export default function WeeklyTimetable({ registrations = [] }) {
-  const [view, setView] = useState("week");
+// Phones start in List view, because a 5-day grid is too wide for a small screen.
+function startingView() {
+  return typeof window !== "undefined" && window.matchMedia?.("(max-width: 700px)").matches ? "list" : "week";
+}
+
+export default function WeeklyTimetable({ registrations = [], today = "" }) {
+  const [view, setView] = useState(startingView);
   const { events, days, start, end, unavailable } = buildTimetable(registrations);
   const hours = Array.from({ length: (end - start) / 60 }, (_, i) => start + i * 60);
   const terms = [...new Set(registrations.map(r => r.term).filter(Boolean))].join(", ");
+  const tones = courseTones(registrations.map(r => r.courseCode));
+  const courses = [...new Map(registrations.map(r => [r.courseCode, r])).values()]
+    .sort((a, b) => a.courseCode.localeCompare(b.courseCode));
+
   return <section className="dashboard-section timetable-section" aria-labelledby="timetable-title">
     <div className="section-heading">
       <div><p className="eyebrow">Your week at a glance</p><h2 id="timetable-title">Weekly timetable</h2>
         <p className="section-description">{terms ? `Term ${terms} · ` : ""}Recurring class times in Bangkok time</p></div>
-      <div className="view-switch" aria-label="Timetable view">
-        <button type="button" aria-pressed={view === "week"} onClick={() => setView("week")}>Week</button>
-        <button type="button" aria-pressed={view === "list"} onClick={() => setView("list")}>List</button>
+      <div className="timetable-tools">
+        <div className="view-switch" aria-label="Timetable view">
+          <button type="button" aria-pressed={view === "week"} onClick={() => setView("week")}>Week</button>
+          <button type="button" aria-pressed={view === "list"} onClick={() => setView("list")}>List</button>
+        </div>
+        {events.length > 0 && <button type="button" className="calendar-button" onClick={() => downloadIcs(registrations)}
+          title={`Downloads a calendar file. Classes repeat weekly for ${WEEKS} weeks.`}>
+          <Icon name="download" /> Add to calendar
+        </button>}
       </div>
     </div>
+
+    {/* Colour key: one colour per course, used in both views */}
+    {courses.length > 0 && <ul className="course-legend" aria-label="Course colours">
+      {courses.map(c => <li key={c.courseCode} className={`course-tone-${tones[c.courseCode]}`}>
+        <span aria-hidden="true" className="course-swatch" />{c.courseCode} · {c.courseName}
+      </li>)}
+    </ul>}
+
     {!events.length ? <div className="portal-empty"><strong>No classes scheduled yet</strong><p>Your registered classes will appear here once meeting times are available.</p></div>
       : view === "list" ? <div className="schedule-list">{days.map(day => {
         const daily = events.filter(e => e.day === day).sort((a, b) => a.start - b.start);
-        return <div className="schedule-day" key={day}><h3>{day}</h3>{daily.length ? daily.map(e =>
-          <article key={e.id} className="schedule-list-event"><span>{timeLabel(e.start)}–{timeLabel(e.end)}</span>
-            <div><strong>{e.courseCode} · Section {e.section}</strong><p>{e.courseName}</p><small>{e.room}{e.instructor ? ` · ${e.instructor}` : ""}</small></div></article>) : <p className="section-description">No classes</p>}</div>;
+        return <div className={`schedule-day${day === today ? " is-today" : ""}`} key={day}>
+          <h3>{day}{day === today && <span className="today-tag">Today</span>}</h3>
+          {daily.length ? daily.map(e =>
+            <article key={e.id} className={`schedule-list-event course-tone-${tones[e.courseCode]}`}>
+              <span>{timeLabel(e.start)}–{timeLabel(e.end)}</span>
+              <div><strong>{e.courseCode} · Section {e.section}</strong><p>{e.courseName}</p><small>{e.room}{e.instructor ? ` · ${e.instructor}` : ""}</small></div>
+            </article>) : <p className="section-description">No classes</p>}
+        </div>;
       })}</div>
       : <div className="timetable-scroll" role="region" aria-label="Weekly class schedule, scroll horizontally to see all days" tabIndex={0}>
         <div className="timetable" style={{ "--day-count": days.length }}>
-          <div className="timetable-corner">Time</div>{days.map(day => <div className="timetable-day-name" key={day}>{day}</div>)}
+          <div className="timetable-corner">Time</div>
+          {days.map(day => <div className={`timetable-day-name${day === today ? " is-today" : ""}`} key={day}>
+            {day}{day === today && <span className="today-tag">Today</span>}
+          </div>)}
           <div className="timetable-hours" style={{ height: hours.length * 64 }}>{hours.map(h => <span key={h}>{timeLabel(h)}</span>)}</div>
-          {days.map(day => <div className="timetable-column" key={day} style={{ height: hours.length * 64 }}>
-            {events.filter(e => e.day === day).map(e => <article className="timetable-event" key={e.id}
+          {days.map(day => <div className={`timetable-column${day === today ? " is-today" : ""}`} key={day} style={{ height: hours.length * 64 }}>
+            {events.filter(e => e.day === day).map(e => <article className={`timetable-event course-tone-${tones[e.courseCode]}`} key={e.id}
               style={{ top: (e.start - start) / 60 * 64, height: (e.end - e.start) / 60 * 64 - 3,
                 left: `calc(${e.lane / e.lanes * 100}% + 3px)`, width: `calc(${100 / e.lanes}% - 6px)` }}
               aria-label={`${e.day}, ${timeLabel(e.start)} to ${timeLabel(e.end)}, ${e.courseCode}, section ${e.section}, ${e.room}`}>

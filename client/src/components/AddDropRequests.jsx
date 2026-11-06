@@ -83,7 +83,7 @@ export default function AddDropRequests({advisor=false,onChanged,initialChoice=n
         {row.status==='pending'&&(advisor?<div className="request-review">
           <label htmlFor={`response-${row.id}`}>Response (required to reject)</label>
           <textarea id={`response-${row.id}`} maxLength={1000} rows={2} value={responses[row.id]??''} onChange={e=>setResponses({...responses,[row.id]:e.target.value})} disabled={busy}/>
-          <div className="request-actions"><button disabled={busy||!row.offering||!open(row.offering)} type="button" onClick={()=>review(row,'approved')}>Approve {row.action}</button><button disabled={busy||(responses[row.id]??'').trim().length<5} type="button" onClick={()=>review(row,'rejected')}>Reject request</button></div>
+          <div className="request-actions"><button className="primary-button" disabled={busy||!row.offering||!open(row.offering)} type="button" onClick={()=>review(row,'approved')}>Approve {row.action}</button><button className="danger-button" disabled={busy||(responses[row.id]??'').trim().length<5} type="button" onClick={()=>review(row,'rejected')}>Reject request</button></div>
           {(!row.offering||!open(row.offering))&&<p>Window closed. Reopen it in Offering Management before approval, or reject with an explanation.</p>}
         </div>:<button disabled={busy} type="button" onClick={()=>{if(window.confirm('Cancel this pending request?'))void mutate(`/student/requests/${row.id}/cancel`,{},'Request cancelled.');}}>Cancel request</button>)}
       </article>)}</div>

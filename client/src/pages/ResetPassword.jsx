@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { resetPassword } from "../api";
+import usePageTitle from "../hooks/usePageTitle.js";
 import AuthLayout from "../components/AuthLayout";
 import { checkNewPassword, readResetToken } from "../utils/passwordForm";
 
 
 export default function ResetPassword() {
+  usePageTitle("Reset password");
   const navigate = useNavigate();
   // Read the token from the link once, when the page opens.
   const [token] = useState(() => readResetToken(window.location.hash));

@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { requestPasswordReset } from "../api";
+import usePageTitle from "../hooks/usePageTitle.js";
 import AuthLayout from "../components/AuthLayout";
 import { checkEmail } from "../utils/passwordForm";
 
 export default function ForgotPassword() {
+  usePageTitle("Forgot password");
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [formError, setFormError] = useState("");

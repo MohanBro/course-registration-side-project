@@ -66,7 +66,7 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
 
           <Route
-            path="/student"
+            path="/student/*"
             element={
               <ProtectedRoute allowedRole="student">
                 <StudentDashboard />

@@ -2,7 +2,9 @@
 .section-heading h2 { margin-bottom: 8px; }
 .section-description { color: var(--muted); font-size: .9rem; margin: 0; }
 .view-switch { display: flex; background: var(--surface-soft); border: 1px solid var(--border); border-radius: 9px; padding: 3px; flex-shrink: 0; }
-.view-switch button { border: 0; min-height: 36px; padding: 6px 16px; background: transparent; color: var(--muted); box-shadow: none; }
+.timetable-tools { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.calendar-button { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; }
+.view-switch button { border: 0; min-height: 44px; padding: 6px 18px; background: transparent; color: var(--muted); box-shadow: none; }
 .view-switch button[aria-pressed="true"] { background: var(--navy); color: white; }
 
 /* Six course colours. Each course gets one (see courseTones in utils/studentDashboard.js).

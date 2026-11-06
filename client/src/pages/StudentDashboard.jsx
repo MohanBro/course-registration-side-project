@@ -6,17 +6,19 @@ import WeeklyTimetable from "../components/WeeklyTimetable.jsx";
 import StudentOverview from "../components/student/StudentOverview.jsx";
 import StudentCourses from "../components/student/StudentCourses.jsx";
 import StudentGrades from "../components/student/StudentGrades.jsx";
+import DeadlineBanner from "../components/student/DeadlineBanner.jsx";
+import Icon from "../components/Icon.jsx";
 import { buildTimetable } from "../utils/timetable.js";
-import { bangkokNow, greeting, planForNow } from "../utils/studentDashboard.js";
+import { bangkokNow, greeting, planForNow, upcomingDeadlines, urgentDeadline } from "../utils/studentDashboard.js";
 import "./StudentDashboard.css";
 
 // The sections of the student workspace. Each has its own address, e.g. /student/grades.
 const SECTIONS = [
-  { key: "overview", path: "/student", label: "Overview", title: null },
-  { key: "timetable", path: "/student/timetable", label: "Timetable", title: "Timetable" },
-  { key: "courses", path: "/student/courses", label: "My courses", title: "My courses" },
-  { key: "grades", path: "/student/grades", label: "Grades", title: "Grades" },
-  { key: "requests", path: "/student/requests", label: "Requests", title: "Requests" },
+  { key: "overview", path: "/student", label: "Overview", title: null, icon: "home" },
+  { key: "timetable", path: "/student/timetable", label: "Timetable", title: "Timetable", icon: "calendar" },
+  { key: "courses", path: "/student/courses", label: "My courses", title: "My courses", icon: "book" },
+  { key: "grades", path: "/student/grades", label: "Grades", title: "Grades", icon: "award" },
+  { key: "requests", path: "/student/requests", label: "Requests", title: "Requests", icon: "inbox" },
 ];
 
 export default function StudentDashboard() {
@@ -71,6 +73,9 @@ export default function StudentDashboard() {
   const clock = bangkokNow(new Date(now));
   const todayLabel = new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "Asia/Bangkok" }).format(new Date(now));
 
+  // At most one banner, shown above the page heading (GOV.UK guidance).
+  const urgent = data ? urgentDeadline(upcomingDeadlines(data.registrations, now)) : null;
+
   let content;
   if (error) {
     content = <section className="dashboard-section" role="alert">
@@ -81,8 +86,9 @@ export default function StudentDashboard() {
     content = <p role="status" className="muted-text">Loading your student records…</p>;
   } else {
     const plan = planForNow(buildTimetable(data.registrations).events, clock);
+    const deadlines = upcomingDeadlines(data.registrations, now);
     const refresh = () => setAttempt(value => value + 1);
-    if (section.key === "overview") content = <StudentOverview data={data} plan={plan} pendingCount={pendingCount} today={todayLabel} minutesNow={clock.minutes} />;
+    if (section.key === "overview") content = <StudentOverview data={data} plan={plan} pendingCount={pendingCount} today={todayLabel} minutesNow={clock.minutes} deadlines={deadlines} />;
     if (section.key === "timetable") content = <WeeklyTimetable registrations={data.registrations} today={clock.day} />;
     if (section.key === "courses") content = <StudentCourses data={data} now={now} />;
     if (section.key === "grades") content = <StudentGrades data={data} />;
@@ -97,21 +103,23 @@ export default function StudentDashboard() {
   }
 
   return <div className="student-layout">
+    <a className="skip-link" href="#main-content">Skip to main content</a>
     <aside className="student-nav-area">
       <div className="student-brand"><span className="portal-symbol" aria-hidden="true">C</span><span>Course Portal</span></div>
       <nav aria-label="Student sections" className="student-nav">
         {SECTIONS.map(s => <NavLink key={s.key} to={s.path} end className={({ isActive }) => `student-nav-link${isActive ? " active" : ""}`}>
-          {s.label}{s.key === "requests" && pendingCount > 0 && <span className="nav-count" aria-label={`${pendingCount} pending`}>{pendingCount}</span>}
+          <span className="nav-label"><Icon name={s.icon} />{s.label}</span>{s.key === "requests" && pendingCount > 0 && <span className="nav-count" aria-label={`${pendingCount} pending`}>{pendingCount}</span>}
         </NavLink>)}
       </nav>
       {data && <div className="student-identity">
         <span className="avatar" aria-hidden="true">{data.student.name.trim().charAt(0).toUpperCase()}</span>
         <span><strong>{data.student.name}</strong><small>{data.student.studentId}</small></span>
       </div>}
-      <button type="button" className="student-logout" onClick={logout}>Log out</button>
+      <button type="button" className="student-logout" onClick={logout}><Icon name="logout" /> Log out</button>
     </aside>
 
-    <main className="student-main">
+    <main className="student-main" id="main-content" tabIndex={-1}>
+      {urgent && section.key !== "requests" && <DeadlineBanner deadline={urgent} />}
       <header className="student-page-header">
         {section.key === "overview"
           ? <><p className="eyebrow">Student workspace</p><h1>{greeting(clock.minutes)}{data ? `, ${data.student.name.split(" ")[0]}` : ""}.</h1>

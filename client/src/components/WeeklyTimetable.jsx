@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { buildTimetable, timeLabel } from "../utils/timetable.js";
 import { courseTones } from "../utils/studentDashboard.js";
+import { downloadIcs, WEEKS } from "../utils/calendar.js";
+import Icon from "./Icon.jsx";
 import "./WeeklyTimetable.css";
 
 // Phones start in List view, because a 5-day grid is too wide for a small screen.
@@ -21,9 +23,15 @@ export default function WeeklyTimetable({ registrations = [], today = "" }) {
     <div className="section-heading">
       <div><p className="eyebrow">Your week at a glance</p><h2 id="timetable-title">Weekly timetable</h2>
         <p className="section-description">{terms ? `Term ${terms} · ` : ""}Recurring class times in Bangkok time</p></div>
-      <div className="view-switch" aria-label="Timetable view">
-        <button type="button" aria-pressed={view === "week"} onClick={() => setView("week")}>Week</button>
-        <button type="button" aria-pressed={view === "list"} onClick={() => setView("list")}>List</button>
+      <div className="timetable-tools">
+        <div className="view-switch" aria-label="Timetable view">
+          <button type="button" aria-pressed={view === "week"} onClick={() => setView("week")}>Week</button>
+          <button type="button" aria-pressed={view === "list"} onClick={() => setView("list")}>List</button>
+        </div>
+        {events.length > 0 && <button type="button" className="calendar-button" onClick={() => downloadIcs(registrations)}
+          title={`Downloads a calendar file. Classes repeat weekly for ${WEEKS} weeks.`}>
+          <Icon name="download" /> Add to calendar
+        </button>}
       </div>
     </div>
 

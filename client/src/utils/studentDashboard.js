@@ -75,3 +75,22 @@ export function termCredits(courses) {
 export function findOffering(offerings, courseCode, section) {
   return offerings.find(o => o.courseCode === courseCode && String(o.section) === String(section)) || null;
 }
+
+// Add/drop deadlines that are still ahead, soonest first.
+// Each item: { courseCode, courseName, section, closesAt (Date), daysLeft }
+export function upcomingDeadlines(registrations, nowMs = Date.now()) {
+  return registrations
+    .filter(r => r.addDropOpen && r.addDropClosesAt && new Date(r.addDropClosesAt).getTime() > nowMs)
+    .map(r => {
+      const closesAt = new Date(r.addDropClosesAt);
+      return { courseCode: r.courseCode, courseName: r.courseName, section: r.section, closesAt,
+        daysLeft: Math.ceil((closesAt.getTime() - nowMs) / 86400000) };
+    })
+    .sort((a, b) => a.closesAt - b.closesAt);
+}
+
+// The single most urgent deadline for the page banner: one closing within
+// `withinDays` days, or null. (Design guidance: show at most one banner at a time.)
+export function urgentDeadline(deadlines, withinDays = 3) {
+  return deadlines.find(d => d.daysLeft <= withinDays) || null;
+}

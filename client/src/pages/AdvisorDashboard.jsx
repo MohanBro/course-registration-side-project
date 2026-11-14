@@ -7,7 +7,10 @@ import OfferingManagement from "../components/OfferingManagement.jsx";
 import AppShell, { PageHeader } from "../components/AppShell.jsx";
 import Icon from "../components/Icon.jsx";
 import usePageTitle from "../hooks/usePageTitle.js";
-import { gradeTone } from "../utils/studentDashboard.js";
+import { courseTones, gradeTone } from "../utils/studentDashboard.js";
+import { confirmDialog } from "../utils/confirm.js";
+import { meetingSummary } from "../utils/punch.js";
+import { Box, PunchGrid, SeatDots } from "../components/Punch.jsx";
 
 // The sections of the advisor workspace, each with its own address.
 const SECTIONS = [
@@ -203,9 +206,12 @@ export default function AdvisorDashboard() {
 
     const offering = registrationData.offerings.find(row => row.id === offeringId);
     if (!offering?.eligible) return;
-    if (!window.confirm(
-      `Register ${selectedStudent.name} (${selectedStudent.studentId}) for ${offering.courseCode} Section ${offering.section} in ${offering.term}?`
-    )) return;
+    const sure = await confirmDialog({
+      title: `Register for ${offering.courseCode}?`,
+      message: `${selectedStudent.name} (${selectedStudent.studentId}) will be registered for ${offering.courseCode} section ${offering.section} in term ${offering.term}.`,
+      confirmLabel: "Register",
+    });
+    if (!sure) return;
 
     const studentId = selectedStudent.id;
     setPendingAction(offeringId);
@@ -239,9 +245,11 @@ export default function AdvisorDashboard() {
         async function handleDrop(registrationId, courseLabel) {
     if (!selectedStudent || pendingAction) return;
 
-    const confirmed = window.confirm(
-      `Are you sure you want to drop ${courseLabel}?`
-    );
+    const confirmed = await confirmDialog({
+      title: "Drop this course?",
+      message: `${selectedStudent.name} will be dropped from ${courseLabel}.`,
+      confirmLabel: "Drop course", danger: true,
+    });
 
     if (!confirmed) return;
 
@@ -332,6 +340,9 @@ export default function AdvisorDashboard() {
   const visibleStudents = students.filter(s => !query ||
     [s.name, s.email, s.studentId].some(v => String(v || "").toLowerCase().includes(query)));
   const terms = [...new Set(result.history.map(r => r.term))].sort().reverse();
+  // One card colour per course, the same on the "Current courses" and "Register" lists.
+  const tones = courseTones([...registrationData.offerings.map(o => o.courseCode),
+    ...registrationData.registrations.map(r => r.offering?.courseCode).filter(Boolean)]);
   const afterRequestChange = () => {
     setOfferingRevision(value => value + 1);
     setSummaryVersion(value => value + 1);
@@ -426,32 +437,48 @@ export default function AdvisorDashboard() {
             <p className="muted-text">{selectedStudent.studentId} · <a href={`mailto:${selectedStudent.email}`}>{selectedStudent.email}</a></p></div>
           <span className={`status-pill ${selectedStudent.active ? "status-active" : "status-inactive"}`}>{selectedStudent.active ? "Active" : "Inactive"}</span>
         </div>
-        <div className="segmented" role="tablist" aria-label="Student details">
+        <div className="segmented" role="group" aria-label="Student details to show">
           {[["registrations", "Current courses"], ["register", "Register"], ["history", "Grades"]].map(([key, label]) =>
-            <button key={key} type="button" role="tab" aria-selected={detailTab === key} onClick={() => setDetailTab(key)}>{label}</button>)}
+            <button key={key} type="button" aria-pressed={detailTab === key} onClick={() => setDetailTab(key)}>{label}</button>)}
         </div>
-        {actionMessage && <p role="status" className="message-success" style={{ marginTop: 16 }}>{actionMessage}</p>}
-        {actionError && <p role="alert" className="message-error" style={{ marginTop: 16 }}>{actionError}</p>}
+        <div className="detail-messages">
+          {actionMessage && <p role="status" className="message-success">{actionMessage}</p>}
+          {actionError && <p role="alert" className="message-error">{actionError}</p>}
+        </div>
 
-        <div role="tabpanel" style={{ marginTop: 18 }}>
+        <div className="detail-panel">
           {detailTab === "registrations" && (registrationData.loading ? <p role="status" className="muted-text">Loading registrations…</p>
             : registrationData.error ? <p role="alert" className="message-error">{registrationData.error}</p>
             : registrationData.registrations.length === 0 ? <div className="portal-empty"><strong>No current registrations</strong>
                 <p>Use the Register tab to add a course.</p></div>
             : <div className="offer-list">{registrationData.registrations.map(registration => {
               const offering = registration.offering || {};
-              return <article className="offer-card" key={registration.id}>
-                <div>
-                  <strong className="course-code">{offering.courseCode || "—"} · Section {offering.section || "—"}</strong>
-                  <h3>{offering.courseTitle || "—"}</h3>
-                  <p className="meta">{formatSchedule(offering.meetings)} · {offering.room || "Room to be confirmed"}</p>
-                  <p className="meta">{offering.instructor || "Instructor not specified"} · {offering.credits ?? "—"} credits · Term {offering.term || "—"}</p>
+              return <article className={`pcard course-tone-${tones[offering.courseCode] ?? 0}`} key={registration.id}>
+                <div className="pcard-head">
+                  <strong className="course-code">{offering.courseCode || "—"}</strong>
+                  <span className="course-meta">Section {offering.section || "—"}</span>
+                  <span className="course-meta">{offering.credits ?? "—"} credits</span>
+                  <span className="course-meta">Term {offering.term || "—"}</span>
                 </div>
-                <div className="actions">
-                  <button type="button" className="danger-button" disabled={Boolean(pendingAction)}
-                    onClick={() => handleDrop(registration.id, `${offering.courseCode} — ${offering.courseTitle}`)}>
-                    {pendingAction === registration.id ? "Dropping…" : "Drop course"}
-                  </button>
+                <div className="pcard-body">
+                  <div className="pcard-main">
+                    <h3>{offering.courseTitle || "—"}</h3>
+                    <dl className="boxes">
+                      <Box label="When">{meetingSummary(offering.meetings) || formatSchedule(offering.meetings)}</Box>
+                      <Box label="Room">{offering.room || "To be confirmed"}</Box>
+                      <Box label="Instructor">{offering.instructor || "Not specified"}</Box>
+                    </dl>
+                  </div>
+                  <PunchGrid meetings={offering.meetings} />
+                </div>
+                <div className="pcard-foot">
+                  <span />
+                  <div className="actions">
+                    <button type="button" className="danger-button" disabled={Boolean(pendingAction)}
+                      onClick={() => handleDrop(registration.id, `${offering.courseCode}, ${offering.courseTitle}`)}>
+                      {pendingAction === registration.id ? "Dropping…" : "Drop course"}
+                    </button>
+                  </div>
                 </div>
               </article>;
             })}</div>)}
@@ -461,22 +488,37 @@ export default function AdvisorDashboard() {
             : registrationData.offerings.length === 0 ? <div className="portal-empty"><strong>No current offerings</strong><p>Create offerings in the Offerings section.</p></div>
             : <div className="offer-list">{registrationData.offerings.map(offering => {
               const open = windowIsOpen(offering);
-              return <article className="offer-card" key={offering.id}>
-                <div>
-                  <strong className="course-code">{offering.courseCode} · Section {offering.section}</strong>
-                  <h3>{offering.courseTitle}{offering.retakeRequired && <span className="status-pill status-warning" style={{ marginLeft: 8 }}>Retake</span>}</h3>
-                  <p className="meta">{formatSchedule(offering.meetings)} · {offering.room || "Room to be confirmed"} · {offering.instructor || "Instructor not specified"}</p>
-                  <p className="meta">{offering.seatsRemaining ?? "—"} of {offering.capacity ?? "—"} seats left · {offering.credits} credits · Term {offering.term}</p>
-                  <p style={{ margin: "8px 0 0" }}>
-                    <span className={`status-pill ${offering.eligible ? "status-active" : "status-danger"}`}>{offering.eligible ? "Eligible" : offering.reason || "Registration unavailable"}</span>{" "}
-                    <span className={`status-pill ${open ? "status-info" : "status-inactive"}`}>Add/drop {open ? "open" : "closed"}</span>
-                  </p>
+              return <article className={`pcard course-tone-${tones[offering.courseCode] ?? 0}`} key={offering.id}>
+                <div className="pcard-head">
+                  <strong className="course-code">{offering.courseCode}</strong>
+                  <span className="course-meta">Section {offering.section}</span>
+                  <span className="course-meta">{offering.credits} credits</span>
+                  <span className="course-meta">Term {offering.term}</span>
                 </div>
-                <div className="actions">
-                  <button type="button" className="primary-button" onClick={() => handleRegister(offering.id)}
-                    disabled={!offering.eligible || Boolean(pendingAction) || !selectedStudent.active}>
-                    {pendingAction === offering.id ? "Registering…" : "Register"}
-                  </button>
+                <div className="pcard-body">
+                  <div className="pcard-main">
+                    <h3>{offering.courseTitle}</h3>
+                    <dl className="boxes">
+                      <Box label="When">{meetingSummary(offering.meetings) || formatSchedule(offering.meetings)}</Box>
+                      <Box label="Room">{offering.room || "To be confirmed"}</Box>
+                      <Box label="Instructor">{offering.instructor || "Not specified"}</Box>
+                    </dl>
+                    <p className="pcard-pills">
+                      <span className={`status-pill ${offering.eligible ? "status-active" : "status-danger"}`}>{offering.eligible ? "Eligible" : offering.reason || "Registration unavailable"}</span>
+                      {offering.retakeRequired && <span className="status-pill status-warning">Retake</span>}
+                      <span className={`status-pill ${open ? "status-info" : "status-inactive"}`}>Add/drop {open ? "open" : "closed"}</span>
+                    </p>
+                  </div>
+                  <PunchGrid meetings={offering.meetings} />
+                </div>
+                <div className="pcard-foot">
+                  <SeatDots capacity={offering.capacity} remaining={offering.seatsRemaining} />
+                  <div className="actions">
+                    <button type="button" className="primary-button" onClick={() => handleRegister(offering.id)}
+                      disabled={!offering.eligible || Boolean(pendingAction) || !selectedStudent.active}>
+                      {pendingAction === offering.id ? "Registering…" : "Register"}
+                    </button>
+                  </div>
                 </div>
                 <div className="window-controls">
                   <label htmlFor={`window-${offering.id}`}>New closing date (Bangkok time)

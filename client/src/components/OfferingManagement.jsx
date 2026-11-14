@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiRequest } from "../api.js";
+import { confirmDialog } from "../utils/confirm.js";
 
 const blank = { courseId: "", termId: "", section: 1, capacity: 30,
   room: "", instructor: "", meetings: [{ day: "Monday", startTime: "08:30", endTime: "12:30" }] };
@@ -70,8 +71,8 @@ export default function OfferingManagement({ onChanged, refreshVersion = 0 }) {
     } catch (err) { setError(err.message); } finally { setBusy(false); }
   }
   async function remove(row) {
-    if (!window.confirm("Remove " + row.courseCode + " Section " + row.section +
-      "? Sections with any registration history cannot be deleted.")) return;
+    if (!(await confirmDialog({ title: "Remove " + row.courseCode + " section " + row.section + "?",
+      message: "Sections with any registration history cannot be removed.", confirmLabel: "Remove section", danger: true }))) return;
     setBusy(true); setError(""); setMessage("");
     try {
       await apiRequest("/advisor/offerings/" + row.id, { method: "DELETE" });

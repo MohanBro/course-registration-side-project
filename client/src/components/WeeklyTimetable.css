@@ -1,44 +1,40 @@
-.section-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 20px; }
-.section-heading h2 { margin-bottom: 8px; }
-.section-description { color: var(--muted); font-size: .9rem; margin: 0; }
-.view-switch { display: flex; background: var(--surface-soft); border: 1px solid var(--border); border-radius: 9px; padding: 3px; flex-shrink: 0; }
+/* The weekly planner: ruled like a paper diary, with a block per class. */
+.section-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 18px; }
+.section-heading h2 { margin-bottom: 6px; }
+.section-description { color: var(--muted); font-size: .95rem; margin: 0; }
 .timetable-tools { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.calendar-button { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; }
-.view-switch button { border: 0; min-height: 44px; padding: 6px 18px; background: transparent; color: var(--muted); box-shadow: none; }
-.view-switch button[aria-pressed="true"] { background: var(--navy); color: white; }
+.calendar-button { display: inline-flex; align-items: center; gap: 8px; background: var(--canary); box-shadow: var(--press); }
+.calendar-button:hover:not(:disabled) { background: var(--canary); transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
+.calendar-button:active:not(:disabled) { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--ink); }
 
-/* Six course colours. Each course gets one (see courseTones in utils/studentDashboard.js).
-   --tone-bg: block background, --tone-line: left border and swatch, --tone-text: text. */
-.course-tone-0 { --tone-bg: #e6f4f0; --tone-line: #0b7c70; --tone-text: #0f4d46; }
-.course-tone-1 { --tone-bg: #e8effb; --tone-line: #3463b8; --tone-text: #1f3f78; }
-.course-tone-2 { --tone-bg: #fdf0e1; --tone-line: #c46a12; --tone-text: #7a4108; }
-.course-tone-3 { --tone-bg: #f2ebfa; --tone-line: #7a4fb8; --tone-text: #4c2c7a; }
-.course-tone-4 { --tone-bg: #fbe9ee; --tone-line: #b8456a; --tone-text: #792943; }
-.course-tone-5 { --tone-bg: #eaf4e2; --tone-line: #4f8a2a; --tone-text: #30561a; }
-
-.course-legend { display: flex; flex-wrap: wrap; gap: 8px 18px; list-style: none; padding: 0; margin: 0 0 18px; font-size: .85rem; color: var(--navy); }
+.course-legend { display: flex; flex-wrap: wrap; gap: 8px 18px; list-style: none; padding: 0; margin: 0 0 16px; font-size: .92rem; }
 .course-legend li { display: flex; align-items: center; gap: 8px; }
-.course-swatch { width: 12px; height: 12px; border-radius: 4px; background: var(--tone-bg); border: 2px solid var(--tone-line); }
+.course-swatch { width: 14px; height: 14px; border-radius: 3px; background: var(--tone); border: 1.5px solid var(--ink); }
 
-.timetable-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; }
+.timetable-scroll { overflow-x: auto; border: 1.5px solid var(--ink); border-radius: 8px; background: var(--paper); }
 .timetable { display: grid; grid-template-columns: 66px repeat(var(--day-count), minmax(128px, 1fr)); min-width: 710px; }
-.timetable-corner, .timetable-day-name { padding: 14px 8px; text-align: center; background: var(--surface-soft); font-size: .8rem; font-weight: 700; border-bottom: 1px solid var(--border); }
-.timetable-day-name.is-today { background: #e3f2ee; color: var(--teal); }
-.today-tag { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 20px; background: var(--teal); color: white; font-size: .65rem; font-weight: 700; letter-spacing: .03em; vertical-align: middle; }
-.timetable-hours { background: white; }
-.timetable-hours span { display: block; height: 64px; padding: 8px; color: var(--muted); font-size: .75rem; font-variant-numeric: tabular-nums; }
-.timetable-column { position: relative; border-left: 1px solid var(--border); background: repeating-linear-gradient(to bottom, transparent 0, transparent 63px, var(--border) 63px, var(--border) 64px); }
-.timetable-column.is-today { background-color: #f6fbf9; }
-.timetable-event { position: absolute; border-radius: 6px; border: 1px solid color-mix(in srgb, var(--tone-line) 30%, white); border-left: 4px solid var(--tone-line); background: var(--tone-bg); color: var(--tone-text); padding: 8px; overflow: auto; display: flex; flex-direction: column; gap: 4px; font-size: .75rem; line-height: 1.35; }
-.timetable-event strong { font-size: .85rem; }
-.timetable-event small { margin-top: auto; font-size: .72rem; }
-.portal-empty { padding: 36px 20px; border: 1px dashed var(--border); border-radius: 12px; text-align: center; }
-.portal-empty p { color: var(--muted); }
-.schedule-day + .schedule-day { border-top: 1px solid var(--border); margin-top: 16px; padding-top: 8px; }
-.schedule-day h3 { font-size: .95rem; display: flex; align-items: center; }
-.schedule-day.is-today h3 { color: var(--teal); }
-.schedule-list-event { display: flex; gap: 18px; padding: 12px 14px; margin: 8px 0; border-radius: 10px; background: var(--tone-bg); border-left: 4px solid var(--tone-line); color: var(--tone-text); }
-.schedule-list-event > span { font-size: .85rem; font-weight: 700; min-width: 95px; font-variant-numeric: tabular-nums; }
-.schedule-list-event p { margin: 4px 0; }
-.schedule-list-event small { opacity: .85; }
-@media(max-width: 600px) { .section-heading { flex-direction: column; } .schedule-list-event { flex-direction: column; gap: 4px; } }
+.timetable-corner, .timetable-day-name { padding: 11px 8px; text-align: center; background: var(--manila); font-size: .9rem; font-weight: 800; border-bottom: 1.5px solid var(--ink); }
+/* One colour per weekday (the first child is the "Time" corner) */
+.timetable > .timetable-day-name:nth-child(2) { background: #fbdacf; }
+.timetable > .timetable-day-name:nth-child(3) { background: #d5e7fa; }
+.timetable > .timetable-day-name:nth-child(4) { background: #d6f0e0; }
+.timetable > .timetable-day-name:nth-child(5) { background: #e7defa; }
+.timetable > .timetable-day-name:nth-child(6) { background: #fbe0b8; }
+.timetable > .timetable-day-name:nth-child(7) { background: #d3f0f1; }
+.timetable > .timetable-day-name:nth-child(8) { background: #fbdcea; }
+.timetable > .timetable-day-name.is-today { background: var(--canary); }
+.today-tag { display: inline-block; margin-left: 8px; padding: 1px 8px; border: 1.5px solid var(--ink); border-radius: 20px; background: var(--paper); color: var(--ink); font-size: .72rem; font-weight: 700; vertical-align: middle; }
+.timetable-hours span { display: block; height: 64px; padding: 6px 8px; font-family: var(--typed); color: var(--muted); font-size: .8rem; }
+.timetable-column { position: relative; border-left: 1px solid var(--rule); background: repeating-linear-gradient(to bottom, transparent 0, transparent 63px, var(--rule) 63px, var(--rule) 64px); }
+.timetable-column.is-today { background-color: #fffbe6; }
+.timetable-event { position: absolute; border: 1.5px solid var(--ink); border-radius: 5px; background: var(--tone-bg); color: var(--ink); box-shadow: 2px 2px 0 var(--ink); padding: 6px 8px; overflow: auto; display: flex; flex-direction: column; gap: 2px; font-size: .8rem; line-height: 1.3; }
+.timetable-event strong { font-family: var(--typed); font-size: .95rem; }
+.timetable-event small { margin-top: auto; font-size: .76rem; color: var(--muted); }
+
+.schedule-day + .schedule-day { border-top: 1px dashed var(--rule); margin-top: 16px; padding-top: 8px; }
+.schedule-day h3 { font-size: 1.05rem; display: flex; align-items: center; }
+.schedule-list-event { display: flex; gap: 18px; padding: 10px 14px; margin: 8px 0; border: 1.5px solid var(--ink); border-radius: 6px; background: var(--tone-bg); }
+.schedule-list-event > span { font-family: var(--typed); font-weight: 700; min-width: 108px; }
+.schedule-list-event p { margin: 2px 0; }
+.schedule-list-event small { color: var(--muted); }
+@media (max-width: 600px) { .section-heading { flex-direction: column; } .schedule-list-event { flex-direction: column; gap: 4px; } }

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { timeLabel } from "../../utils/timetable.js";
 import { courseTones } from "../../utils/studentDashboard.js";
 import Icon from "../Icon.jsx";
+import { Box } from "../Punch.jsx";
 
 const shortDate = date => new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: "Asia/Bangkok" }).format(date);
 
@@ -16,16 +17,31 @@ export default function StudentOverview({ data, plan, pendingCount, today, minut
     { label: "Retakes needed", value: retakes, to: "/student/grades", icon: "alert", note: retakes ? "Courses to pass again" : "You're all caught up", tone: retakes ? "warning" : "" },
   ];
 
+  const term = data.registrations[0]?.term;
+
   return <>
-    <ul className="stat-grid" aria-label="Key numbers">
-      {stats.map(s => <li key={s.label}>
-        <Link className={`stat-card ${s.tone ? `stat-${s.tone}` : ""}`} to={s.to}>
-          <span className="stat-label"><Icon name={s.icon} />{s.label}</span>
-          <strong className="stat-value">{s.value}</strong>
-          <span className="stat-note">{s.note}</span>
-        </Link>
-      </li>)}
-    </ul>
+    {/* The registration card: who the student is, then the four key numbers. */}
+    <section className="regcard" aria-labelledby="regcard-title">
+      <div className="regcard-top">
+        <h2 id="regcard-title">Registration card</h2>
+        {term && <span className="regcard-term">Term {term}</span>}
+      </div>
+      <dl className="boxes">
+        <Box label="Student">{data.student.name}</Box>
+        <Box label="Student ID">{data.student.studentId || "Not set"}</Box>
+        <Box label="Email">{data.student.email}</Box>
+        <Box label="Advisor">{data.advisor ? data.advisor.name : "Not assigned"}</Box>
+      </dl>
+      <ul className="stat-grid" aria-label="Key numbers">
+        {stats.map(s => <li key={s.label}>
+          <Link className={`stat-card ${s.tone ? `stat-${s.tone}` : ""}`} to={s.to}>
+            <span className="stat-label"><Icon name={s.icon} />{s.label}</span>
+            <strong className="stat-value">{s.value}</strong>
+            <span className="stat-note">{s.note}</span>
+          </Link>
+        </li>)}
+      </ul>
+    </section>
 
     <div className="overview-grid">
       <section className="dashboard-section today-card" aria-labelledby="today-title">

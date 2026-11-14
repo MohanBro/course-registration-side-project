@@ -5,6 +5,7 @@ import AccountManagement from "../components/AccountManagement.jsx";
 import AppShell, { PageHeader } from "../components/AppShell.jsx";
 import Icon from "../components/Icon.jsx";
 import usePageTitle from "../hooks/usePageTitle.js";
+import { confirmDialog } from "../utils/confirm.js";
 
 // The sections of the admin workspace, each with its own address.
 const SECTIONS = [
@@ -189,9 +190,11 @@ async function handleEditStudent(event) {
 }
 
 async function handleDeactivateStudent(student) {
-  const confirmed = window.confirm(
-    `Deactivate ${student.name} (${student.studentId})?`
-  );
+  const confirmed = await confirmDialog({
+    title: `Deactivate ${student.name}?`,
+    message: `${student.studentId} will no longer be able to sign in. Their academic records are kept.`,
+    confirmLabel: "Deactivate", danger: true,
+  });
 
   if (!confirmed) return;
 
@@ -371,7 +374,7 @@ if (section.key === "students") content = <section className="dashboard-section"
 
 if (section.key === "advisors") content = <section className="dashboard-section" aria-labelledby="advisors-title">
   <h2 id="advisors-title">Advisors and their students</h2>
-  <div className="student-table-wrapper">
+  <div className="student-table-wrapper" tabIndex={0} role="region" aria-label="Advisors table, scroll sideways if needed">
     <table className="student-table">
       <thead><tr><th>Name</th><th>Email</th><th>Students</th><th>Status</th></tr></thead>
       <tbody>
@@ -390,7 +393,7 @@ if (section.key === "advisors") content = <section className="dashboard-section"
 
 if (section.key === "courses") content = <section className="dashboard-section" aria-labelledby="courses-title">
   <h2 id="courses-title">Course catalogue</h2>
-  <div className="student-table-wrapper">
+  <div className="student-table-wrapper" tabIndex={0} role="region" aria-label="Course catalogue table, scroll sideways if needed">
     <table className="student-table">
       <thead><tr><th>Code</th><th>Title</th><th>Credits</th></tr></thead>
       <tbody>
@@ -407,7 +410,7 @@ if (section.key === "courses") content = <section className="dashboard-section" 
 
 if (section.key === "sections") content = <section className="dashboard-section" aria-labelledby="sections-title">
   <h2 id="sections-title">Sections this term</h2>
-  <div className="student-table-wrapper">
+  <div className="student-table-wrapper" tabIndex={0} role="region" aria-label="Sections table, scroll sideways if needed">
     <table className="student-table">
       <thead><tr><th>Course</th><th>Section</th><th>Room</th><th>Instructor</th></tr></thead>
       <tbody>

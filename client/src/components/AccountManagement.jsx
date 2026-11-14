@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiRequest } from "../api.js";
+import { confirmDialog } from "../utils/confirm.js";
 
 const clean = { name: "", email: "", password: "", role: "student", studentId: "", advisor: "", active: true };
 export default function AccountManagement({ onChanged }) {
@@ -35,7 +36,7 @@ export default function AccountManagement({ onChanged }) {
       if (editing) {
         const original = users.find(u => u.id === editing);
         if (original?.active === true && form.active === false &&
-            !window.confirm(`Deactivate ${original.name} (${original.role})? Academic history will be preserved.`)) {
+            !(await confirmDialog({ title: `Deactivate ${original.name}?`, message: `This ${original.role} will no longer be able to sign in. Academic history is kept.`, confirmLabel: "Deactivate", danger: true }))) {
           return;
         }
       }
@@ -54,7 +55,7 @@ export default function AccountManagement({ onChanged }) {
     } catch (err) { setError(err.message); } finally { setBusy(false); }
   }
   async function deactivate(u) {
-    if (!window.confirm("Deactivate " + u.name + " (" + u.role + ")? Existing academic history will be preserved.")) return;
+    if (!(await confirmDialog({ title: "Deactivate " + u.name + "?", message: "This " + u.role + " will no longer be able to sign in. Existing academic history is kept.", confirmLabel: "Deactivate", danger: true }))) return;
     setBusy(true); setError(""); setMessage("");
     try {
       await apiRequest("/admin/users/" + u.id, { method: "DELETE" });

@@ -1,11 +1,13 @@
 # Course Portal
 
-Personal continuation by Sham Bahadu, built on the team's submitted Course Registration System. The personal version adds a light navy-and-teal interface, a weekly student timetable, fictional demo data, in-app advisor-reviewed Add/Drop requests and password recovery. It runs locally for development; it is not a deployed service and is not ready for real student records.
+Personal continuation by Sham Bahadu, built on the team's submitted Course Registration System. The personal version adds a "registrar's desk" interface (a green desk, manila folder tabs, punch-card course cards, carbon-copy request slips and rubber stamps), a weekly student timetable, fictional demo data, in-app advisor-reviewed Add/Drop requests and password recovery. It runs locally for development; it is not a deployed service and is not ready for real student records.
 
 ## What's included
 
 **Interface and timetable**
-- Redesigned sign-in with a responsive layout, navy/teal colors and accessible focus states, plus shared styling for the Admin and Advisor workspaces.
+- The whole frontend uses one "registrar's desk" design: sections are manila folder tabs (a bar along the bottom on phones), courses are punch cards whose punched holes show when the class meets, add/drop requests are yellow and pink slips, and decisions are stamped. Only the frontend changed; the API, the database and the demo data are the same.
+- Press Ctrl+K (Cmd+K on a Mac) to jump to any section. Confirmations use an in-page dialog instead of the browser's pop-up.
+- Keyboard focus is always visible, colours meet WCAG AA contrast, and animations switch off when the device asks for reduced motion. Fonts (Bricolage Grotesque and Courier Prime, SIL Open Font License) are stored in `client/public/fonts`, so nothing is loaded from other websites.
 - Student weekly timetable built from the existing dashboard data, with Week/List views, multiple weekly meetings, weekend classes and clear handling of missing schedules. Overlapping legacy meetings are shown side by side; backend registration rules still decide what is allowed.
 
 **Add/Drop requests**
@@ -59,7 +61,7 @@ Offline checks (no database needed). GitHub Actions runs these on pushes and pul
 
 ```bash
 npm test --prefix server          # 63 backend tests
-npm test --prefix client          # 7 tests: timetable and password form
+npm test --prefix client          # 20 tests: timetable, punch cards, dashboard helpers and password form
 npm run lint --prefix client
 npm run build --prefix client
 ```

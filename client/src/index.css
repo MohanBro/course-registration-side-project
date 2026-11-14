@@ -1,45 +1,76 @@
+/* Base styles and design tokens for the whole website.
+   The look is "the registrar's desk": a green desk blotter, manila folders with
+   tabs, punch cards for courses, carbon-copy slips for requests and rubber stamps
+   for decisions. */
+
+/* Two fonts, both open licence (SIL OFL) and stored in public/fonts:
+   Bricolage Grotesque = text printed on a form, Courier Prime = text typed onto it. */
+@font-face { font-family: "Bricolage"; src: url("/fonts/bricolage.woff2") format("woff2"); font-weight: 200 800; font-display: swap; }
+@font-face { font-family: "Courier Prime"; src: url("/fonts/courier-prime-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Courier Prime"; src: url("/fonts/courier-prime-700.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+
 :root {
-  font-family: "Avenir Next", "Segoe UI", Arial, sans-serif;
-  color: #182c40; background: #f3f6f8; font-synthesis: none; text-rendering: optimizeLegibility;
-  --navy: #142d43; --teal: #087c71; --teal-hover: #066258; --muted: #596e7f;
-  --border: #dce5ea; --surface-soft: #f6f9fa; --danger: #a82e38;
-  --page: #f3f6f8; --surface: #ffffff;
+  --type: "Bricolage", "Trebuchet MS", "Segoe UI", sans-serif;
+  --typed: "Courier Prime", "Courier New", Courier, monospace;
+  font-family: var(--type);
+  font-synthesis: none; text-rendering: optimizeLegibility;
 
-  /* Status colours, in background + text pairs (like Material Design's "container"
-     colours). Every pair was checked for at least 4.5:1 contrast (WCAG AA). */
-  --success-bg: #def3ec; --success-text: #086348; --success-line: #8fd0bb;
-  --warning-bg: #fff4d6; --warning-text: #7a4f00; --warning-line: #f0cc72;
-  --danger-bg: #fbe6e6;  --danger-text: #9b2730;  --danger-line: #eba9ae;
-  --info-bg: #e7effb;    --info-text: #1f4f8f;    --info-line: #a9c2e8;
-  --neutral-bg: #edf1f5; --neutral-text: #44576a;
+  /* The desk */
+  --desk: #163a2e; --desk-dark: #0e2920; --desk-line: #2c5646; --desk-text: #f3eedb; --desk-muted: #b7ccbd;
+  /* Paper */
+  --sheet: #fbf7ea; --paper: #fffdf5; --manila: #ecdcae; --manila-dark: #d6c388; --rule: #cdc3a2;
+  /* Ink */
+  --ink: #14201b; --muted: #47554c;
+  --blue: #1c3fa8; --blue-dark: #142f80; --red: #b3261a; --amber: #7d5200; --green: #17603a;
+  --canary: #ffd84a; --canary-soft: #fff2b3; --pink-soft: #fbd6de;
 
-  /* Spacing (multiples of 4px), corner radius and shadow, so pages feel consistent. */
-  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px; --space-6: 32px;
-  --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px;
-  --shadow-card: 0 1px 2px #142d430a, 0 4px 12px #142d430a;
+  /* Older names kept so existing components keep working. */
+  --navy: var(--ink); --teal: var(--blue); --teal-hover: var(--blue-dark); --border: var(--rule);
+  --surface-soft: var(--manila); --danger: var(--red); --page: var(--desk); --surface: var(--paper);
+  --success-bg: #dff1e3; --success-text: var(--green); --success-line: var(--green);
+  --warning-bg: var(--canary-soft); --warning-text: var(--amber); --warning-line: var(--amber);
+  --danger-bg: #fbe4e1; --danger-text: var(--red); --danger-line: var(--red);
+  --info-bg: #dfe8fb; --info-text: var(--blue); --info-line: var(--blue);
+  --neutral-bg: #ece6d2; --neutral-text: var(--muted);
+
+  --press: 3px 3px 0 var(--ink);          /* the hard shadow under buttons */
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  color: var(--ink); background: var(--desk);
 }
 * { box-sizing: border-box; }
 html, body, #root { margin: 0; min-height: 100%; }
-body { min-height: 100vh; line-height: 1.5; }
+body { min-height: 100vh; line-height: 1.5; background: var(--desk);
+  background-image: radial-gradient(rgba(255, 255, 255, .035) 1px, transparent 1.5px); background-size: 7px 7px; }
 button, input, select, textarea { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
-button { cursor: pointer; min-height: 44px; padding: 9px 16px; border: 1px solid var(--border); border-radius: 8px; background: white; color: var(--navy); font-size: .85rem; font-weight: 600; transition: background .15s, border-color .15s; }
-button:hover:not(:disabled) { background: #edf5f3; border-color: #9cc6bf; }
-button:disabled { opacity: .5; cursor: not-allowed; }
-input:not([type="checkbox"]), select, textarea { min-height: 44px; border: 1px solid #cbd8e0; border-radius: 8px; padding: 10px 12px; color: var(--navy); background: white; }
-input[aria-invalid="true"] { border-color: var(--danger); }
-:focus-visible { outline: 3px solid #238d80; outline-offset: 3px; }
-a { color: var(--teal); }
-h1, h2, h3 { color: var(--navy); line-height: 1.25; }
-h1 { letter-spacing: -.035em; }
-h2 { letter-spacing: -.02em; }
-[role="alert"] { color: var(--danger); }
-.eyebrow { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .15em; color: var(--teal); margin: 0 0 12px; }
+
+/* Buttons look like paper tabs with an ink outline; the main action is blue and "presses" down. */
+button { cursor: pointer; min-height: 44px; padding: 8px 16px; border: 2px solid var(--ink); border-radius: 8px; background: var(--paper); color: var(--ink); font-size: .92rem; font-weight: 700; transition: transform .08s, box-shadow .08s, background .15s; }
+button:hover:not(:disabled) { background: var(--manila); }
+button:disabled { opacity: .55; cursor: not-allowed; }
+input:not([type="checkbox"]), select, textarea { min-height: 44px; border: 1.5px solid var(--ink); border-radius: 6px; padding: 9px 12px; color: var(--ink); background: var(--paper); font-family: var(--typed); font-size: 1rem; }
+select { font-family: var(--type); }
+input:hover, select:hover, textarea:hover { background: #fff; }
+input[aria-invalid="true"] { border-color: var(--red); box-shadow: 3px 3px 0 var(--red); }
+input::placeholder, textarea::placeholder { color: #66736a; }
+:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 4px; }
+a { color: var(--blue); text-underline-offset: 3px; }
+h1, h2, h3, h4 { color: var(--ink); line-height: 1.12; letter-spacing: -.02em; }
+h1 { font-weight: 800; }
+[role="alert"] { color: var(--red); }
+
+/* The small line above a heading: typed, not shouted. */
+.eyebrow { font-family: var(--typed); font-size: .88rem; font-weight: 700; color: var(--muted); margin: 0 0 6px; }
+
 /* "Skip to main content" link: hidden until a keyboard user presses Tab. */
-.skip-link { position: absolute; left: 16px; top: -60px; z-index: 100; padding: 10px 16px; border-radius: 8px; background: var(--navy); color: white; font-weight: 600; text-decoration: none; }
-.skip-link:focus { top: 12px; }
+.skip-link { position: absolute; left: 16px; top: -70px; z-index: 100; padding: 10px 16px; border: 2px solid var(--ink); border-radius: 8px; background: var(--canary); color: var(--ink); font-weight: 700; text-decoration: none; }
+.skip-link:focus { top: 12px; outline-color: var(--canary); }
 /* Text for screen readers only (e.g. a label for a search box that has a visible icon). */
 .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .icon { width: 1.15em; height: 1.15em; flex-shrink: 0; }
-.service-notice { margin: 0; padding: 12px 24px; background: #fff3e5; font-size: .85rem; text-align: center; }
-@media(prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; } }
+.service-notice { margin: 0; padding: 12px 24px; background: var(--canary); color: var(--ink); font-weight: 700; text-align: center; border-bottom: 2px solid var(--ink); }
+
+/* People who ask their device for less motion get no animation at all. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; transition: none !important; scroll-behavior: auto !important; }
+}

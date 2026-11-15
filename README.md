@@ -12,6 +12,7 @@ Built with React, Express and MongoDB. It has a "registrar's desk" interface, a 
 ![Vite 8](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
 ![Express 5](https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb&logoColor=white)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ![Student overview](docs/screenshots/student-dashboard.png)
 
@@ -33,6 +34,7 @@ Built with React, Express and MongoDB. It has a "registrar's desk" interface, a 
 - [Roadmap](#roadmap)
 - [Contributing workflow](#contributing-workflow)
 - [Attribution](#attribution)
+- [License](#license)
 
 ## Features
 
@@ -239,3 +241,7 @@ The original Course Registration System was built by **Rachaphon Bhetcharut, Sha
 
 > [!IMPORTANT]
 > The inherited workbook `server/CSC220-Project-Info_final_1.xlsx` is still in the repository, and its first 17 histories were reported to be based on real academic records. The demo seed does not read it.
+
+## License
+
+Released under the [MIT License](LICENSE). Copyright (c) 2026 the original team: Rachaphon Bhetcharut, Sham Bahadu, Panruethai Thubthimthong, Hathairat Deesrisuk and Trithep Sik.

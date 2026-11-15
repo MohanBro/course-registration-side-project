@@ -24,12 +24,14 @@ The app expects the API at `http://localhost:5002/api`, so start the backend too
 
 ```
 client/
-├── public/        Static files (favicon, icons, fillable PDF form)
+├── public/        Static files: favicon, icons, fonts and the fillable Add/Drop PDF form
 ├── src/
 │   ├── api.js     API client and session handling
-│   ├── components/
-│   ├── pages/     One page per route: sign-in, student, advisor, admin
-│   └── utils/     Pure logic (timetable and so on), covered by tests/
+│   ├── components/ App shell, timetable, punch cards, request slips
+│   ├── hooks/     usePageTitle (sets each page's browser-tab title)
+│   ├── pages/     Sign-in, password reset, student, advisor and admin pages
+│   ├── styles/    Shared portal styles
+│   └── utils/     Pure logic (timetable, calendar export, punch cards), covered by tests/
 └── tests/         *.test.mjs unit tests
 ```
 

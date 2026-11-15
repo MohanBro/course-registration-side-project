@@ -36,31 +36,31 @@ Built with React, Express and MongoDB. It has a "registrar's desk" interface, a 
 
 ## Features
 
-### 🎓 Students
+### Students
 - **Overview**: today's classes, the next class, upcoming deadlines, credits earned and retakes needed.
 - **Weekly timetable** with Week and List views. It handles classes that meet more than once a week, weekend classes, missing schedules and overlapping older meetings (shown side by side). You can export it to Google Calendar, Apple Calendar or Outlook as an `.ics` file.
 - **My courses** as punch cards, where the punched holes show when each class meets.
 - **Grades** by term, with coloured grade badges and credit totals.
 - **Add/Drop requests**: submit a request with a reason, cancel a pending one and read the advisor's decision. A banner warns when an add/drop window is about to close.
 
-### 🧑‍🏫 Advisors
+### Advisors
 - **Request inbox** with a pending count. Approving a request rechecks every registration rule and updates the registration in one atomic, repeat-safe step.
 - **My students**: grade history, current registrations, and eligible offerings with the reason when one is blocked. Advisors can register or drop students directly.
 - **Offerings**: create, edit and remove sections (schedule, room, instructor, capacity), see remaining seats, and open or close each add/drop window.
 
-### 🛠️ Administrators
+### Administrators
 - **Accounts**: create, edit, search, deactivate and assign advisors. Safeguards stop the last active admin from being removed.
 - **Courses and sections** overview.
 
-### 🔐 Accounts and security
+### Accounts and security
 - **Password recovery** through a "Forgot your password?" link and a single-use reset link that expires after 30 minutes. Only a hash of each link is stored, and requests are rate-limited per computer and per email address.
 - The reply is the same whether or not an email is registered. Only active accounts receive a link.
 - Changing or resetting a password **signs that user out of every existing session**. When a signed-in request is refused, the app returns to the sign-in page with a short notice.
 
-### ♿ Interface and accessibility
+### Interface and accessibility
 - One "registrar's desk" design: manila folder tabs (a bottom bar on phones), punch-card courses, carbon-copy request slips and rubber-stamp decisions.
 - **Ctrl+K / ⌘K** jumps to any page. Confirmations use an in-page dialog instead of browser pop-ups.
-- Keyboard focus is always visible, colours meet WCAG AA contrast, animations stop when the device asks for reduced motion, and every page has its own title.
+- Keyboard focus is always visible, animations stop when the device asks for reduced motion, and every page has its own title.
 - Fonts (Bricolage Grotesque and Courier Prime, SIL OFL) are stored in the repository, so the app loads nothing from other websites.
 
 ## Screenshots
@@ -107,11 +107,13 @@ cp server/.env.example server/.env
 | `PORT` | API port (default `5002`) |
 | `CLIENT_ORIGIN` | Frontend address allowed by CORS (default `http://localhost:5174`) |
 | `MONGODB_URI` | Your own Atlas connection string |
-| `MONGODB_DB_NAME` | A separate personal database name |
+| `MONGODB_DB_NAME` | A separate personal database name. The demo seed only accepts `course_registration_seed_personal_dev` |
 | `JWT_SECRET` | A new, long random secret |
 | `SEED_PASSWORD` | Shared password for the demo accounts |
-| `MAIL_TRANSPORT` | `console` prints password-reset emails in the backend terminal (development only) |
+| `MAIL_TRANSPORT` | `console` prints password-reset emails in the backend terminal (development only). `memory` is for tests. Leave it empty to send no email. No real email provider is set up yet |
 | `APP_BASE_URL` | Optional: website address used in reset links (defaults to `CLIENT_ORIGIN`) |
+| `DNS_SERVERS` | Optional: comma-separated DNS servers, for networks that cannot resolve Atlas addresses |
+| `SEED_FILE` | Optional: workbook for the inherited `npm run seed` script (not used by the demo seed) |
 
 > [!WARNING]
 > Never commit `server/.env`, and never reuse the original team's database or secrets.
@@ -123,7 +125,7 @@ npm run demo:preview --prefix server   # shows what would be created, without co
 npm run demo:seed --prefix server      # fills a NEW, EMPTY database with fictional data
 ```
 
-The seed refuses to run on a database that already has data. See [demo data](docs/demo-data.md) for every scenario it sets up.
+The seed only runs when `MONGODB_DB_NAME` is `course_registration_seed_personal_dev`, and it refuses to run on a database that already has data. See [demo data](docs/demo-data.md) for every scenario it sets up.
 
 ### 4. Run
 

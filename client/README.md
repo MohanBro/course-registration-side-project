@@ -1,16 +1,38 @@
-# React + Vite
+# Course Portal: frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+This is the React single-page app for the Course Portal. For setup, demo accounts and the full feature list, see the [project README](../README.md).
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+React 19 · React Router 7 · Vite 8 · Oxlint. There is no CSS framework; styles are plain CSS files next to the components.
 
-## React Compiler
+## Scripts
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Run these from the repository root with `--prefix client`, or from inside `client/` without it.
 
-## Expanding the Oxlint configuration
+| Command | What it does |
+|---|---|
+| `npm run dev --prefix client` | Starts the dev server at http://localhost:5174 |
+| `npm run build --prefix client` | Builds for production into `client/dist` |
+| `npm run preview --prefix client` | Serves the production build locally |
+| `npm test --prefix client` | Runs the unit tests in `tests/` with Node's built-in test runner |
+| `npm run lint --prefix client` | Runs Oxlint |
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+The app expects the API at `http://localhost:5002/api`, so start the backend too (see the project README).
+
+## Layout
+
+```
+client/
+├── public/        Static files: favicon, icons, fonts and the fillable Add/Drop PDF form
+├── src/
+│   ├── api.js     API client and session handling
+│   ├── components/ App shell, timetable, punch cards, request slips
+│   ├── hooks/     usePageTitle (sets each page's browser-tab title)
+│   ├── pages/     Sign-in, password reset, student, advisor and admin pages
+│   ├── styles/    Shared portal styles
+│   └── utils/     Pure logic (timetable, calendar export, punch cards), covered by tests/
+└── tests/         *.test.mjs unit tests
+```
+
+The logic in `src/utils/` has no React or browser dependencies, so it can be tested directly with `node --test`.

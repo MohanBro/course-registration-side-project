@@ -1,58 +1,215 @@
+<div align="center">
+
 # Course Portal
 
-Personal continuation by Sham Bahadu, built on the team's submitted Course Registration System. The personal version includes a light navy-and-teal interface, a weekly student timetable, fictional demo data and in-app advisor-reviewed Add/Drop requests. This is a local development branch, not a deployed service.
+**A course registration portal for students, academic advisors and administrators.**
 
-## Current milestone
+Built with React, Express and MongoDB. It has a navy-and-teal interface, a weekly timetable and Add/Drop requests that advisors approve inside the app.
 
-- Redesigned login with responsive layout, consistent typography, navy/teal colors and accessible focus states.
-- Shared styling for the existing Admin and Advisor workspaces.
-- Student weekly timetable drawn from the existing authenticated dashboard response, with Week/List switching, multiple weekly meetings, weekend support and handling for missing schedules.
-- Overlapping legacy meetings are displayed side by side; the backend registration rules remain authoritative.
-- No new runtime dependencies. Four timetable logic tests are included.
+[![CI checks](https://github.com/MohanBro/course-registration-side-project/actions/workflows/ci.yml/badge.svg?branch=feature/portal-redesign)](https://github.com/MohanBro/course-registration-side-project/actions/workflows/ci.yml)
+![Node.js 24](https://img.shields.io/badge/Node.js-24-5FA04E?logo=nodedotjs&logoColor=white)
+![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![Vite 8](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
+![Express 5](https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb&logoColor=white)
 
-Students can now submit Add/Drop requests inside the website, cancel pending requests and read advisor decisions. Advisors have a pending inbox; approval atomically updates registration using the existing course rules. See [request workflow and tests](docs/in-app-requests.md). Password recovery is still planned. This version is not ready for real student records.
+</div>
 
-## Local isolation
+> [!TIP]
+> **You're on the `feature/portal-redesign` branch.** It was merged into `main` in [pull request #1](https://github.com/MohanBro/course-registration-side-project/pull/1). This README describes the project as of this branch. For the latest version, see [`main`](https://github.com/MohanBro/course-registration-side-project/tree/main).
 
-This personal checkout is separate from the submitted team folder. Its local configuration uses a separately configured personal database and credentials. Frontend defaults to localhost:5174; backend API address defaults to localhost:5002/api. These differ from the team's default ports and keep browser login storage on a separate origin.
+> [!NOTE]
+> This is a personal continuation by Sham Bahadu of a team course project (see [Attribution](#attribution)). It runs locally for development only. It is **not deployed** and **not ready for real student records**.
 
-The upstream remote points to the original team repository for reference; its push URL is DISABLED. The origin remote points to https://github.com/MohanBro/course-registration-side-project.git. Branch: feature/portal-redesign.
+## Contents
 
-## Run the frontend
+- [Features](#features)
+- [Tech stack](#tech-stack)
+- [Getting started](#getting-started)
+- [Demo accounts](#demo-accounts)
+- [Testing](#testing)
+- [Project structure](#project-structure)
+- [Documentation](#documentation)
+- [Roadmap](#roadmap)
+- [Contributing workflow](#contributing-workflow)
+- [Attribution](#attribution)
 
-From this folder:
+## Features
+
+### 🎓 Students
+- **Dashboard**: academic summary, current registrations, grade history by term, failed courses still to retake, and advisor contact details.
+- **Weekly timetable** with Week and List views. It handles classes that meet more than once a week, weekend classes, missing schedules and overlapping older meetings (shown side by side). Backend registration rules still decide what is allowed.
+- **Add/Drop requests**: submit a request with a reason, cancel a pending one and read the advisor's decision.
+
+### 🧑‍🏫 Advisors
+- **Request inbox** with a pending count. Approving a request rechecks every registration rule and updates the registration in one atomic, repeat-safe step.
+- **My students**: grade history, current registrations, and eligible offerings with the reason when one is blocked. Advisors can register or drop students directly.
+- **Offerings**: create, edit and remove sections (schedule, room, instructor, capacity), see remaining seats, and open or close each add/drop window.
+
+### 🛠️ Administrators
+- **Accounts**: create, edit, deactivate and assign advisors. Safeguards stop the last active admin from being removed.
+- **Courses and sections** overview.
+
+### ♿ Interface and accessibility
+- Light navy-and-teal theme with a redesigned, responsive sign-in page and shared styling for the admin and advisor workspaces.
+- Accessible focus states, and animations stop when the device asks for reduced motion.
+
+## Tech stack
+
+| Layer | Tools |
+|---|---|
+| Frontend | React 19, React Router 7, Vite 8, Oxlint |
+| Backend | Node.js 24, Express 5, Mongoose 9, JSON Web Tokens, bcrypt |
+| Database | MongoDB Atlas |
+| Tests and CI | Node's built-in test runner, GitHub Actions |
+
+## Getting started
+
+### Prerequisites
+
+- **Node.js 24** (the version CI uses) and npm
+- A **MongoDB Atlas** cluster with a new, empty database for this project
+
+### 1. Install
 
 ```bash
+git clone https://github.com/MohanBro/course-registration-side-project.git
+cd course-registration-side-project
+npm ci --prefix server
 npm ci --prefix client
-npm run dev --prefix client
 ```
 
-Open http://localhost:5174. Keep the frontend running in one terminal and run `npm run dev --prefix server` in another. The local personal Atlas setup and fictional demo support all three roles; see [demo accounts and scenarios](docs/demo-data.md).
-
-## Personal backend and demo setup
-
-Copy server/.env.example to server/.env locally, then configure your own MongoDB URI, a separate personal database and a new JWT secret. Never reuse the team's database or secrets. The original seed/workbook remains inherited reference material. Its first 17 histories were reported as based on real academic histories; the dedicated `demo:seed` command generates independent fictional histories without reading that workbook. Use `npm run demo:preview --prefix server` first, and `npm run demo:seed --prefix server` only for a new empty personal database. Never rerun it over existing data. No shared database was modified for this milestone.
-
-With your personal backend configured, use npm run dev --prefix server on port 5002. The copied environment example sets CLIENT_ORIGIN to http://localhost:5174. Node's environment loading requires the server working directory for the current scripts; run `cd server` then `npm run dev` if starting through npm --prefix does not resolve your local file as expected.
-
-## Checks
+### 2. Configure the backend
 
 ```bash
-npm run test --prefix client
+cp server/.env.example server/.env
+```
+
+| Variable | Purpose |
+|---|---|
+| `PORT` | API port (default `5002`) |
+| `CLIENT_ORIGIN` | Frontend address allowed by CORS (default `http://localhost:5174`) |
+| `MONGODB_URI` | Your own Atlas connection string |
+| `MONGODB_DB_NAME` | A separate personal database name |
+| `JWT_SECRET` | A new, long random secret |
+| `SEED_PASSWORD` | Shared password for the demo accounts |
+
+> [!WARNING]
+> Never commit `server/.env`, and never reuse the original team's database or secrets.
+
+### 3. Load demo data (optional)
+
+```bash
+npm run demo:preview --prefix server   # shows what would be created, without connecting
+npm run demo:seed --prefix server      # fills a NEW, EMPTY database with fictional data
+```
+
+The seed refuses to run on a database that already has data. See [demo data](docs/demo-data.md) for every scenario it sets up.
+
+### 4. Run
+
+Use two terminals:
+
+```bash
+cd server && npm run dev          # API → http://localhost:5002/api
+npm run dev --prefix client       # Web → http://localhost:5174
+```
+
+Start the backend from inside `server/`, because it reads `.env` from that folder. Then open **http://localhost:5174**.
+
+## Demo accounts
+
+After `demo:seed`, every active account signs in with your `SEED_PASSWORD`:
+
+| Account | Role | Scenario |
+|---|---|---|
+| `admin@example.test` | Admin | The only admin, so last-admin safeguards apply |
+| `advisor001@example.test` | Advisor | Advises DEMO001–DEMO013 |
+| `advisor002@example.test` | Advisor | Advises DEMO014–DEMO025 |
+| `student001@example.test` | Student | Active registrations and varied eligibility cases |
+| `student002@example.test` | Student | Passed a course they had failed; fills the only THA101 seat |
+| `student004@example.test` | Student | Dropped STA101 earlier and can register again |
+| `student025@example.test` | Student | Inactive account, so sign-in fails |
+
+Demo addresses end in `.test` and cannot receive real email.
+
+## Testing
+
+**Offline checks** (no database needed). GitHub Actions runs these on every push to `main` or `feature/**` and on every pull request to `main`:
+
+```bash
+npm test --prefix server          # 50 backend tests
+npm test --prefix client          # 4 frontend tests: timetable
 npm run lint --prefix client
 npm run build --prefix client
-npm test --prefix server
 ```
 
-The last command runs inherited unit/fixture tests, not a live Atlas acceptance run. The inherited integration command creates a separate retained Atlas test database; do not run it until personal credentials and the replacement synthetic dataset are ready.
+**Live Atlas check.** It creates a temporary database, runs the real server against it and then deletes it. Your demo database is not touched.
 
-## Learn and continue
+```bash
+npm run test:requests:integration --prefix server   # Add/Drop requests
+```
 
-- [Milestones and feature decisions](docs/development-roadmap.md)
-- [What changed and how the timetable works](docs/learning-milestone-1.md)
-- [In-app request workflow](docs/in-app-requests.md)
-- [Original group README](docs/original-group-readme.md)
+> [!CAUTION]
+> The older inherited `test:integration` script keeps its test database afterwards. Read `server/scripts/acceptance.mjs` before running it.
+
+## Project structure
+
+```
+.
+├── client/                 React + Vite frontend
+│   ├── src/
+│   │   ├── components/     Timetable, Add/Drop requests…
+│   │   ├── pages/          Student, advisor, admin and auth pages
+│   │   └── utils/          Timetable helpers
+│   └── tests/              Frontend unit tests
+├── server/                 Express API
+│   ├── src/
+│   │   ├── controllers/    Route handlers
+│   │   ├── models/         Mongoose models
+│   │   ├── routes/         /api/auth, /student, /advisor, /admin, /health
+│   │   └── utils/          Registration rules and auth
+│   ├── scripts/            Demo seed and live integration checks
+│   └── tests/              Backend unit tests
+├── docs/                   Guides, roadmap, diagrams and screenshots
+└── .github/workflows/      CI
+```
+
+## Documentation
+
+| Guide | What it covers |
+|---|---|
+| [Development roadmap](docs/development-roadmap.md) | Milestones and feature decisions |
+| [In-app requests](docs/in-app-requests.md) | Add/Drop request workflow and tests |
+| [Demo data](docs/demo-data.md) | Demo accounts and scenarios |
+| [Learning milestone 1](docs/learning-milestone-1.md) | How the timetable works |
+| [Database diagram](docs/database-diagram.svg) | Collections and relationships |
+| [Original group README](docs/original-group-readme.md) | The team's submitted project |
+
+## Roadmap
+
+- [x] Interface foundation and weekly timetable
+- [x] Personal repository and fictional demo data
+- [x] Add/Drop requests inside the app
+- [ ] Password recovery
+- [ ] Public release readiness: real email provider, hosting, accessibility checks in CI, and a production readiness review
+
+## Contributing workflow
+
+- `origin` is this repository. `upstream` is the original team repository; it is kept for reference and pushing to it is disabled.
+- New work goes on `feature/...` branches and is merged into `main` through pull requests.
+- Local `main` still tracks `upstream/main`, so update it from this repository explicitly:
+
+  ```bash
+  git checkout main
+  git pull --ff-only origin main
+  ```
+
+- The app uses ports `5174` and `5002`, which differ from the team project's ports, so sign-ins in the browser stay separate.
 
 ## Attribution
 
-The original course project was built by Rachaphon Bhetcharut, Sham Bahadu, Panruethai Thubthimthong, Hathairat Deesrisuk and Trithep Sik. Original repository: https://github.com/Captansleepy/ITE220-Final-Project-Course-Registration-System. Its Git history is preserved. The redesign and subsequent personal additions should be described separately in the project documentation rather than presenting the entire inherited application as solo work.
+The original Course Registration System was built by **Rachaphon Bhetcharut, Sham Bahadu, Panruethai Thubthimthong, Hathairat Deesrisuk and Trithep Sik**. The original repository is [Captansleepy/ITE220-Final-Project-Course-Registration-System](https://github.com/Captansleepy/ITE220-Final-Project-Course-Registration-System), and its Git history is preserved here. The redesign and the later features are personal additions. They are described separately, so the inherited application is not presented as solo work.
+
+> [!IMPORTANT]
+> The inherited workbook `server/CSC220-Project-Info_final_1.xlsx` is still in the repository, and its first 17 histories were reported to be based on real academic records. The demo seed does not read it.

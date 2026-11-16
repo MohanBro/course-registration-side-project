@@ -211,6 +211,8 @@ npm run test:reset:integration --prefix server      # password reset flow
 | [Demo data](docs/demo-data.md) | Demo accounts and scenarios |
 | [Learning milestone 1](docs/learning-milestone-1.md) | How the timetable works |
 | [Database diagram](docs/database-diagram.svg) | Collections and relationships |
+| [Server README](server/README.md) | Backend scripts, API routes and folders |
+| [Client README](client/README.md) | Frontend scripts and folders |
 | [Original group README](docs/original-group-readme.md) | The team's submitted project |
 
 ## Roadmap
